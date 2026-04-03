@@ -2,7 +2,7 @@ import { StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
 import MapView, { Callout, Marker, Region } from 'react-native-maps';
 
-import { ventyEvents } from '@/data/events';
+import { useEvents } from '@/context/event-context';
 
 const INITIAL_REGION: Region = {
   latitude: 47.95,
@@ -12,9 +12,11 @@ const INITIAL_REGION: Region = {
 };
 
 export default function MapScreen() {
+  const { events } = useEvents();
+
   return (
     <MapView style={styles.map} initialRegion={INITIAL_REGION}>
-      {ventyEvents.slice(0, 3).map((event) => (
+      {events.slice(0, 3).map((event) => (
         <Marker
           key={event.id}
           coordinate={event.coordinates}

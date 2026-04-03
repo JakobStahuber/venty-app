@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useEvents } from '@/context/event-context';
 
 type Bundle = {
   id: 'starter' | 'pro' | 'premium';
@@ -18,6 +21,13 @@ const bundles: Bundle[] = [
 ];
 
 export default function PlusScreen() {
+  const { addEvent } = useEvents();
+
+  const [title, setTitle] = useState('');
+  const [dateTime, setDateTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [ticketPrice, setTicketPrice] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Partys');
   const [selectedBundleId, setSelectedBundleId] = useState<Bundle['id'] | null>(null);
 
@@ -30,6 +40,35 @@ export default function PlusScreen() {
     ? `Event veroeffentlichen & Zahlungspflichtig buchen (${selectedBundle.price} EUR)`
     : 'Event kostenlos veroeffentlichen';
 
+  const handleSubmit = () => {
+    if (!title.trim() || !dateTime.trim() || !location.trim()) {
+      return;
+    }
+
+    const [rawDate, rawTime] = dateTime.split(',').map((part) => part?.trim() ?? '');
+    const date = rawDate || 'Demnaechst';
+    const time = rawTime || '20:00 Uhr';
+    const parsedPrice = Number.parseFloat(ticketPrice.replace(',', '.')) || 0;
+
+    addEvent({
+      title,
+      date,
+      time,
+      location: `${location} • ${selectedCategory}`,
+      ticketPriceEur: parsedPrice,
+      description: description || 'Weitere Details folgen in Kuerze.',
+    });
+
+    setTitle('');
+    setDateTime('');
+    setLocation('');
+    setTicketPrice('');
+    setDescription('');
+    setSelectedBundleId(null);
+
+    router.replace('/(tabs)');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -38,15 +77,38 @@ export default function PlusScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. Basis-Infos</Text>
 
-          <InputField label="Event-Titel" placeholder="z. B. Summer Rooftop Night" />
-          <InputField label="Datum & Uhrzeit" placeholder="z. B. 28.06.2026, 20:00 Uhr" />
-          <InputField label="Location" placeholder="z. B. Isarforum Muenchen" />
-          <InputField label="Ticketpreis" placeholder="z. B. 15 EUR" keyboardType="numeric" />
+          <InputField
+            label="Event-Titel"
+            placeholder="z. B. Summer Rooftop Night"
+            value={title}
+            onChangeText={setTitle}
+          />
+          <InputField
+            label="Datum & Uhrzeit"
+            placeholder="z. B. 28.06.2026, 20:00 Uhr"
+            value={dateTime}
+            onChangeText={setDateTime}
+          />
+          <InputField
+            label="Location"
+            placeholder="z. B. Isarforum Muenchen"
+            value={location}
+            onChangeText={setLocation}
+          />
+          <InputField
+            label="Ticketpreis"
+            placeholder="z. B. 15 EUR"
+            keyboardType="numeric"
+            value={ticketPrice}
+            onChangeText={setTicketPrice}
+          />
           <InputField
             label="Beschreibung"
             placeholder="Kurzbeschreibung deines Events"
             multiline
             numberOfLines={4}
+            value={description}
+            onChangeText={setDescription}
           />
 
           <Text style={styles.label}>Kategorie</Text>
@@ -94,7 +156,7 @@ export default function PlusScreen() {
           </View>
         </View>
 
-        <Pressable style={styles.ctaButton}>
+        <Pressable style={styles.ctaButton} onPress={handleSubmit}>
           <Text style={styles.ctaText}>{ctaLabel}</Text>
         </Pressable>
       </ScrollView>
@@ -105,12 +167,16 @@ export default function PlusScreen() {
 function InputField({
   label,
   placeholder,
+  value,
+  onChangeText,
   multiline = false,
   numberOfLines,
   keyboardType = 'default',
 }: {
   label: string;
   placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
   multiline?: boolean;
   numberOfLines?: number;
   keyboardType?: 'default' | 'numeric';
@@ -125,6 +191,8 @@ function InputField({
         multiline={multiline}
         numberOfLines={numberOfLines}
         keyboardType={keyboardType}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );

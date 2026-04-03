@@ -1,23 +1,50 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ventyEvents } from '@/data/events';
+import { useEvents } from '@/context/event-context';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const event = ventyEvents.find((item) => item.id === id);
+  const { events, bookTicket } = useEvents();
+  const insets = useSafeAreaInsets();
+  const event = events.find((item) => item.id === id);
 
   if (!event) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>Event nicht gefunden</Text>
+          <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Zurueck</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
   }
+
+  const handleBook = () => {
+    Alert.alert(
+      'Apple Pay',
+      `Ticket fuer "${event.title}" kaufen?`,
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Kaufen',
+          style: 'default',
+          onPress: () => {
+            if (id) {
+              bookTicket(String(id));
+            }
+            Alert.alert('Erfolg', 'Dein Ticket wurde gebucht.');
+            router.replace('/(tabs)');
+          },
+        },
+      ],
+      { userInterfaceStyle: 'light' }
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
@@ -58,10 +85,25 @@ export default function EventDetailScreen() {
       </ScrollView>
 
       <View style={styles.ctaBar}>
-        <Pressable style={styles.ctaButton} onPress={() => router.back()}>
+        <View style={styles.ctaPriceBlock}>
+          <Text style={styles.ctaPriceLabel}>Ab</Text>
+          <Text style={styles.ctaPriceValue}>{event.ticketPriceEur} EUR</Text>
+        </View>
+        <Pressable style={styles.ctaButton} onPress={handleBook}>
           <Text style={styles.ctaText}>Ticket buchen</Text>
         </Pressable>
       </View>
+
+      <Pressable
+        style={[
+          styles.backIconWrapper,
+          {
+            top: insets.top + 10,
+          },
+        ]}
+        onPress={() => router.back()}>
+        <Text style={styles.backIconText}>{'‹'}</Text>
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -160,7 +202,22 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#e5e7eb',
   },
+  ctaPriceBlock: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  ctaPriceLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  ctaPriceValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+  },
   ctaButton: {
+    flex: 1,
     backgroundColor: '#7c3aed',
     borderRadius: 14,
     paddingVertical: 14,
@@ -175,10 +232,37 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 12,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
+    color: '#111827',
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#e5e7eb',
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  backIconWrapper: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIconText: {
+    fontSize: 20,
     color: '#111827',
   },
 });

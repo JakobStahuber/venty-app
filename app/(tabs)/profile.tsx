@@ -1,13 +1,10 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/context/auth-context';
-
-const upcomingEvents = [
-  { id: 'e1', title: 'Rooftop Vibes', date: 'Fr, 07.06. - 20:00' },
-  { id: 'e2', title: 'Silent Disco Isar', date: 'Sa, 15.06. - 21:30' },
-];
+import { useEvents } from '@/context/event-context';
 
 const friends = [
   { id: 'f1', name: 'Lena', initials: 'LE' },
@@ -20,7 +17,11 @@ const friends = [
 const settingsItems = ['Datenschutz', 'Benachrichtigungen', 'Hilfe'];
 
 export default function ProfileScreen() {
-  const { role, upgradeToOrganizer } = useAuth();
+  const { role, upgradeToOrganizer, logout } = useAuth();
+  const { events, bookedEvents } = useEvents();
+
+  const myTickets = events.filter((event) => bookedEvents.includes(event.id));
+  const myCreatedEvents = events.filter((event) => Number.parseInt(event.id, 10) > 4);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -35,19 +36,60 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Terminkalender</Text>
-          <Text style={styles.cardSubtitle}>Anstehende Events</Text>
-          {upcomingEvents.map((event) => (
-            <View key={event.id} style={styles.eventRow}>
-              <View style={styles.eventDot} />
-              <View style={styles.eventTextBlock}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventDate}>{event.date}</Text>
+        {role === 'private' ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Meine Tickets</Text>
+            <Text style={styles.cardSubtitle}>
+              {myTickets.length > 0 ? 'Aktive Buchungen' : 'Noch keine Tickets gebucht'}
+            </Text>
+            {myTickets.map((event) => (
+              <View key={event.id} style={styles.ticketCard}>
+                <View style={styles.ticketLeft}>
+                  <View style={[styles.ticketStripe, { backgroundColor: event.imageColor }]} />
+                  <View style={styles.ticketTextBlock}>
+                    <Text style={styles.ticketTitle}>{event.title}</Text>
+                    <Text style={styles.ticketMeta}>
+                      {event.date} • {event.time}
+                    </Text>
+                    <Text style={styles.ticketLocation}>{event.location}</Text>
+                  </View>
+                </View>
+                <View style={styles.ticketRight}>
+                  <View style={styles.qrMock}>
+                    <MaterialIcons name="qr-code-2" size={22} color="#4b5563" />
+                  </View>
+                  <Text style={styles.ticketPrice}>{event.ticketPriceEur} EUR</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Veranstalter Dashboard</Text>
+            <Text style={styles.cardSubtitle}>Uebersicht deiner Events</Text>
+            <View style={styles.analyticsRow}>
+              <View className="box" style={styles.analyticsBox}>
+                <Text style={styles.analyticsLabel}>Tickets verkauft</Text>
+                <Text style={styles.analyticsValue}>142</Text>
+              </View>
+              <View style={styles.analyticsBox}>
+                <Text style={styles.analyticsLabel}>Umsatz</Text>
+                <Text style={styles.analyticsValue}>2.130 EUR</Text>
               </View>
             </View>
-          ))}
-        </View>
+            {myCreatedEvents.map((event) => (
+              <View key={event.id} style={styles.eventRow}>
+                <View style={styles.eventDot} />
+                <View style={styles.eventTextBlock}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventDate}>
+                    {event.date} • {event.time}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Persoenliche Freunde</Text>
@@ -99,6 +141,9 @@ export default function ProfileScreen() {
               </View>
             ))}
           </View>
+          <Pressable style={styles.logoutButton} onPress={logout}>
+            <Text style={styles.logoutButtonText}>Ausloggen</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

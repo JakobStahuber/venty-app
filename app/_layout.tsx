@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/context/auth-context';
+import { EventProvider } from '@/context/event-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -75,10 +76,12 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <RootNavigator />
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <EventProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <RootNavigator />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </EventProvider>
     </AuthProvider>
   );
 }

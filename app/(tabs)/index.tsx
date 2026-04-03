@@ -2,9 +2,11 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ventyEvents } from '@/data/events';
+import { useEvents } from '@/context/event-context';
 
 export default function HomeScreen() {
+  const { events } = useEvents();
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
@@ -13,7 +15,7 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.feedContent} showsVerticalScrollIndicator={false}>
-        {ventyEvents.map((event) => (
+        {events.map((event) => (
           <Pressable
             key={event.id}
             style={styles.card}

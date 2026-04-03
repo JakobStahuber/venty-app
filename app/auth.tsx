@@ -48,8 +48,8 @@ export default function AuthScreen() {
             <Text style={styles.primaryButtonText}>Einloggen</Text>
           </Pressable>
 
-          <Pressable style={styles.secondaryButton} onPress={() => router.push('/role-selection')}>
-            <Text style={styles.secondaryButtonText}>Registrieren</Text>
+          <Pressable style={styles.linkButton} onPress={() => router.push('/role-selection')}>
+            <Text style={styles.linkButtonText}>Neuen Account erstellen</Text>
           </Pressable>
         </View>
       </View>
@@ -110,16 +110,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  secondaryButton: {
-    backgroundColor: '#ede9fe',
-    borderRadius: 14,
-    minHeight: 52,
+  linkButton: {
+    paddingVertical: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  secondaryButtonText: {
+  linkButtonText: {
     color: '#5b21b6',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

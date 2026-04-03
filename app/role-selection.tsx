@@ -8,12 +8,12 @@ const roleCards: { id: UserRole; title: string; description: string }[] = [
   {
     id: 'private',
     title: 'Privater Nutzer',
-    description: 'Events entdecken, Freunden folgen und spontan zusagen.',
+    description: 'Events entdecken & Tickets buchen',
   },
   {
     id: 'organizer',
     title: 'Veranstalter',
-    description: 'Events erstellen, bewerben und Insights im Dashboard sehen.',
+    description: 'Events erstellen & bewerben',
   },
 ];
 
@@ -33,8 +33,10 @@ export default function RoleSelectionScreen() {
         <View style={styles.cards}>
           {roleCards.map((role) => (
             <Pressable key={role.id} style={styles.card} onPress={() => handleSelectRole(role.id)}>
-              <Text style={styles.cardTitle}>{role.title}</Text>
-              <Text style={styles.cardDescription}>{role.description}</Text>
+              <View style={styles.cardInner}>
+                <Text style={styles.cardTitle}>{role.title}</Text>
+                <Text style={styles.cardDescription}>{role.description}</Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -69,9 +71,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e7e3f4',
     padding: 16,
-    minHeight: 130,
+    minHeight: 140,
     justifyContent: 'center',
     gap: 8,
+  },
+  cardInner: {
+    gap: 10,
   },
   cardTitle: {
     fontSize: 20,
