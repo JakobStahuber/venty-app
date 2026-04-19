@@ -68,7 +68,7 @@ export default function ProfileScreen() {
             <Text style={styles.cardTitle}>Veranstalter Dashboard</Text>
             <Text style={styles.cardSubtitle}>Uebersicht deiner Events</Text>
             <View style={styles.analyticsRow}>
-              <View className="box" style={styles.analyticsBox}>
+              <View style={styles.analyticsBox}>
                 <Text style={styles.analyticsLabel}>Tickets verkauft</Text>
                 <Text style={styles.analyticsValue}>142</Text>
               </View>
@@ -215,6 +215,66 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 2,
   },
+  ticketCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e9ddff',
+    borderRadius: 14,
+    backgroundColor: '#faf8ff',
+    padding: 10,
+    gap: 10,
+  },
+  ticketLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  ticketStripe: {
+    width: 6,
+    alignSelf: 'stretch',
+    borderRadius: 4,
+  },
+  ticketTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  ticketTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  ticketMeta: {
+    fontSize: 12,
+    color: '#5b21b6',
+    fontWeight: '600',
+  },
+  ticketLocation: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  ticketRight: {
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 56,
+  },
+  qrMock: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  ticketPrice: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#111827',
+  },
   eventRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -344,5 +404,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#5b21b6',
+  },
+  logoutButton: {
+    marginTop: 10,
+    minHeight: 46,
+    borderRadius: 12,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ffffff',
   },
 });
