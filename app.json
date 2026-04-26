@@ -28,6 +28,18 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Venty nutzt deinen Standort, um die Karte auf deine aktuelle Position zu zentrieren."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Venty benoetigt Zugriff auf deine Fotos, um ein Titelbild fuer dein Event auszuwaehlen."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
@@ -38,7 +50,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

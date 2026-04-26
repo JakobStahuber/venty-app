@@ -41,8 +41,8 @@ export default function AuthScreen() {
         <View style={styles.actions}>
           <Pressable
             style={styles.primaryButton}
-            onPress={() => {
-              login();
+            onPress={async () => {
+              await login('private');
               router.replace('/(tabs)');
             }}>
             <Text style={styles.primaryButtonText}>Einloggen</Text>

@@ -1,13 +1,29 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useRouter, useSegments } from 'expo-router';
+import { useEffect } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/context/auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { role } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
+
+  const isOrganizer = role === 'organizer';
+
+  useEffect(() => {
+    const leaf = segments[segments.length - 1];
+    if (!isOrganizer && leaf === 'plus') {
+      router.replace('/(tabs)');
+    }
+    if (isOrganizer && leaf === 'explore') {
+      router.replace('/(tabs)');
+    }
+  }, [isOrganizer, segments, router]);
 
   return (
     <Tabs
@@ -41,7 +57,17 @@ export default function TabLayout() {
         name="plus"
         options={{
           title: 'Plus',
+          href: isOrganizer ? undefined : null,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Entdecken',
+          headerShown: false,
+          href: !isOrganizer ? undefined : null,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="play.circle.fill" color={color} />,
         }}
       />
       <Tabs.Screen

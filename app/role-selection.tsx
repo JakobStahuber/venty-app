@@ -20,8 +20,8 @@ const roleCards: { id: UserRole; title: string; description: string }[] = [
 export default function RoleSelectionScreen() {
   const { registerWithRole } = useAuth();
 
-  const handleSelectRole = (role: UserRole) => {
-    registerWithRole(role);
+  const handleSelectRole = async (role: UserRole) => {
+    await registerWithRole(role);
     router.replace('/(tabs)');
   };
 

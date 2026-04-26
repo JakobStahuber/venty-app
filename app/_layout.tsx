@@ -2,10 +2,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { EventProvider } from '@/context/event-context';
+import { LocationProvider } from '@/context/location-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -17,8 +19,7 @@ function RootNavigator() {
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
-  
-  // Hilfs-State, um sicherzustellen, dass das Layout 100% geladen ist
+
   const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   useEffect(() => {
@@ -29,7 +30,6 @@ function RootNavigator() {
   useEffect(() => {
     if (!isNavigationReady) return;
 
-    // setTimeout verhindert die Race-Condition beim allerersten App-Start
     const routingTimer = setTimeout(() => {
       const firstSegment = segments[0];
       const isAuthRoute = firstSegment === 'auth' || firstSegment === 'role-selection';
@@ -71,17 +71,44 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
+function RootLayoutContent() {
+  const { isLoading } = useAuth();
   const colorScheme = useColorScheme();
 
+  if (isLoading) {
+    return (
+      <View style={bootStyles.bootSplash}>
+        <ActivityIndicator size="large" color="#7c3aed" />
+        <StatusBar style="auto" />
+      </View>
+    );
+  }
+
   return (
-    <AuthProvider>
-      <EventProvider>
+    <EventProvider>
+      <LocationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <RootNavigator />
           <StatusBar style="auto" />
         </ThemeProvider>
-      </EventProvider>
+      </LocationProvider>
+    </EventProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutContent />
     </AuthProvider>
   );
 }
+
+const bootStyles = StyleSheet.create({
+  bootSplash: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f7ff',
+  },
+});

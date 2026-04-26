@@ -17,6 +17,7 @@ const MAPPING = {
   'house.fill': 'home',
   'map.fill': 'map',
   'plus.circle.fill': 'add-circle',
+  'play.circle.fill': 'play-circle-filled',
   'bell.fill': 'notifications',
   'person.fill': 'person',
   'paperplane.fill': 'send',

@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useEvents } from '@/context/event-context';
@@ -23,6 +25,15 @@ export default function EventDetailScreen() {
       </SafeAreaView>
     );
   }
+
+  const onShare = async () => {
+    const message = `Hey! Lass uns zusammen zu „${event.title}“ am ${event.date} gehen! Entdeckt auf Venty.`;
+    try {
+      await Share.share({ message });
+    } catch {
+      Alert.alert('Teilen', 'Teilen ist gerade nicht möglich. Bitte versuche es erneut.');
+    }
+  };
 
   const handleBook = () => {
     Alert.alert(
@@ -50,7 +61,11 @@ export default function EventDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.heroImage, { backgroundColor: event.imageColor }]}>
-          <Text style={styles.heroLabel}>Hero Image</Text>
+          {event.imageUri ? (
+            <Image source={{ uri: event.imageUri }} style={styles.heroPhoto} contentFit="cover" />
+          ) : (
+            <Text style={styles.heroLabel}>Hero Image</Text>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -101,8 +116,23 @@ export default function EventDetailScreen() {
             top: insets.top + 10,
           },
         ]}
-        onPress={() => router.back()}>
+        onPress={() => router.back()}
+        accessibilityLabel="Zurück">
         <Text style={styles.backIconText}>{'‹'}</Text>
+      </Pressable>
+
+      <Pressable
+        style={[
+          styles.shareIconWrapper,
+          {
+            top: insets.top + 10,
+          },
+        ]}
+        onPress={() => {
+          void onShare();
+        }}
+        accessibilityLabel="Event teilen">
+        <Ionicons name="share-outline" size={22} color="#ffffff" />
       </Pressable>
     </SafeAreaView>
   );
@@ -120,6 +150,12 @@ const styles = StyleSheet.create({
     height: 280,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  heroPhoto: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   heroLabel: {
     fontSize: 14,
@@ -254,15 +290,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     zIndex: 10,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   backIconText: {
     fontSize: 20,
     color: '#111827',
+  },
+  shareIconWrapper: {
+    position: 'absolute',
+    right: 20,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -74,9 +75,13 @@ export default function HomeScreen() {
               key={event.id}
               style={styles.card}
               onPress={() => router.push(`/event/${event.id}`)}>
-              <View style={[styles.imagePlaceholder, { backgroundColor: event.imageColor }]}>
-                <Text style={styles.imageLabel}>Event Bild</Text>
-              </View>
+              {event.imageUri ? (
+                <Image source={{ uri: event.imageUri }} style={styles.feedImage} contentFit="cover" />
+              ) : (
+                <View style={[styles.imagePlaceholder, { backgroundColor: event.imageColor }]}>
+                  <Text style={styles.imageLabel}>Event Bild</Text>
+                </View>
+              )}
 
               <View style={styles.cardContent}>
                 <Text style={styles.eventTitle}>{event.title}</Text>
@@ -174,6 +179,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#ede9fe',
+  },
+  feedImage: {
+    height: 160,
+    width: '100%',
+    backgroundColor: '#f3f4f6',
   },
   imagePlaceholder: {
     height: 160,

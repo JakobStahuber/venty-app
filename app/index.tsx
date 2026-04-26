@@ -3,10 +3,9 @@ import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 export default function Index() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
 
-  // Falls der Login-Status im Hintergrund noch geprüft wird, zeige kurz den Spinner
-  if (isLoggedIn === undefined || isLoggedIn === null) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f7ff' }}>
         <ActivityIndicator size="large" color="#7c3aed" />

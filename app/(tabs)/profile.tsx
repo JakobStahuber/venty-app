@@ -1,3 +1,5 @@
+import { router } from 'expo-router';
+import { Image } from 'expo-image';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,11 +19,12 @@ const friends = [
 const settingsItems = ['Datenschutz', 'Benachrichtigungen', 'Hilfe'];
 
 export default function ProfileScreen() {
-  const { role, upgradeToOrganizer, logout } = useAuth();
-  const { events, bookedEvents } = useEvents();
+  const { role, login, upgradeToOrganizer, logout } = useAuth();
+  const { events, bookedEvents, savedEvents } = useEvents();
 
   const myTickets = events.filter((event) => bookedEvents.includes(event.id));
   const myCreatedEvents = events.filter((event) => Number.parseInt(event.id, 10) > 4);
+  const mySavedEvents = events.filter((event) => savedEvents.includes(event.id));
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -37,32 +40,66 @@ export default function ProfileScreen() {
         </View>
 
         {role === 'private' ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Meine Tickets</Text>
-            <Text style={styles.cardSubtitle}>
-              {myTickets.length > 0 ? 'Aktive Buchungen' : 'Noch keine Tickets gebucht'}
-            </Text>
-            {myTickets.map((event) => (
-              <View key={event.id} style={styles.ticketCard}>
-                <View style={styles.ticketLeft}>
-                  <View style={[styles.ticketStripe, { backgroundColor: event.imageColor }]} />
-                  <View style={styles.ticketTextBlock}>
-                    <Text style={styles.ticketTitle}>{event.title}</Text>
-                    <Text style={styles.ticketMeta}>
-                      {event.date} • {event.time}
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Meine Tickets</Text>
+              <Text style={styles.cardSubtitle}>
+                {myTickets.length > 0 ? 'Aktive Buchungen' : 'Noch keine Tickets gebucht'}
+              </Text>
+              {myTickets.map((event) => (
+                <View key={event.id} style={styles.ticketCard}>
+                  <View style={styles.ticketLeft}>
+                    <View style={[styles.ticketStripe, { backgroundColor: event.imageColor }]} />
+                    <View style={styles.ticketTextBlock}>
+                      <Text style={styles.ticketTitle}>{event.title}</Text>
+                      <Text style={styles.ticketMeta}>
+                        {event.date} • {event.time}
+                      </Text>
+                      <Text style={styles.ticketLocation}>{event.location}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.ticketRight}>
+                    <View style={styles.qrMock}>
+                      <MaterialIcons name="qr-code-2" size={22} color="#4b5563" />
+                    </View>
+                    <Text style={styles.ticketPrice}>{event.ticketPriceEur} EUR</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Gemerkte Events</Text>
+              <Text style={styles.cardSubtitle}>
+                {mySavedEvents.length > 0
+                  ? 'Deine gespeicherten Highlights'
+                  : 'Noch keine Events gemerkt'}
+              </Text>
+              {mySavedEvents.map((event) => (
+                <Pressable
+                  key={event.id}
+                  style={styles.savedEventRow}
+                  onPress={() => router.push(`/event/${event.id}`)}>
+                  {event.imageUri ? (
+                    <Image
+                      source={{ uri: event.imageUri }}
+                      style={styles.savedEventThumb}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View style={[styles.savedEventThumb, { backgroundColor: event.imageColor }]} />
+                  )}
+                  <View style={styles.savedEventTextCol}>
+                    <Text style={styles.savedEventTitle} numberOfLines={2}>
+                      {event.title}
                     </Text>
-                    <Text style={styles.ticketLocation}>{event.location}</Text>
+                    <Text style={styles.savedEventDate}>{event.date}</Text>
                   </View>
-                </View>
-                <View style={styles.ticketRight}>
-                  <View style={styles.qrMock}>
-                    <MaterialIcons name="qr-code-2" size={22} color="#4b5563" />
-                  </View>
-                  <Text style={styles.ticketPrice}>{event.ticketPriceEur} EUR</Text>
-                </View>
-              </View>
-            ))}
-          </View>
+                  <MaterialIcons name="chevron-right" size={22} color="#9ca3af" />
+                </Pressable>
+              ))}
+            </View>
+          </>
         ) : (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Veranstalter Dashboard</Text>
@@ -121,6 +158,27 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.card}>
+          <Text style={styles.cardTitle}>Konto-Einstellungen</Text>
+          <Text style={styles.cardSubtitle}>Rolle und Tab-Leiste</Text>
+          <View style={styles.accountInfoCell}>
+            <Text style={styles.accountInfoLabel}>Aktueller Account-Typ</Text>
+            <Text style={styles.accountInfoValue}>
+              {role === 'organizer' ? 'Veranstalter' : 'Konsument'}
+            </Text>
+          </View>
+          <Pressable
+            style={styles.switchRoleButton}
+            onPress={async () => {
+              const next = role === 'private' ? 'organizer' : 'private';
+              await login(next);
+            }}>
+            <Text style={styles.switchRoleButtonText}>
+              {role === 'private' ? 'Zu Veranstalter wechseln' : 'Zu Konsument wechseln'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.cardTitle}>Einstellungen</Text>
           {role === 'private' ? (
             <Pressable style={styles.upgradeButton} onPress={upgradeToOrganizer}>
@@ -141,7 +199,11 @@ export default function ProfileScreen() {
               </View>
             ))}
           </View>
-          <Pressable style={styles.logoutButton} onPress={logout}>
+          <Pressable
+            style={styles.logoutButton}
+            onPress={async () => {
+              await logout();
+            }}>
             <Text style={styles.logoutButtonText}>Ausloggen</Text>
           </Pressable>
         </View>
@@ -275,6 +337,36 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
   },
+  savedEventRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#e9ddff',
+    borderRadius: 14,
+    backgroundColor: '#faf8ff',
+    padding: 10,
+  },
+  savedEventThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    backgroundColor: '#ede9fe',
+  },
+  savedEventTextCol: {
+    flex: 1,
+    gap: 4,
+  },
+  savedEventTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  savedEventDate: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
   eventRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -404,6 +496,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#5b21b6',
+  },
+  accountInfoCell: {
+    marginTop: 4,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#eceef2',
+    gap: 4,
+  },
+  accountInfoLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  accountInfoValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  switchRoleButton: {
+    marginTop: 10,
+    backgroundColor: '#111827',
+    borderRadius: 12,
+    minHeight: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  switchRoleButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   logoutButton: {
     marginTop: 10,

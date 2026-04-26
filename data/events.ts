@@ -8,6 +8,8 @@ export type VentyEvent = {
   ticketPriceEur: number;
   description: string;
   imageColor: string;
+  /** Lokale URI nach Bild-Upload (nur nutzergestellte Events) */
+  imageUri?: string;
   coordinates: {
     latitude: number;
     longitude: number;
@@ -58,15 +60,15 @@ export const ventyEvents: VentyEvent[] = [
     title: 'Tech and Tacos Meetup',
     date: '18.06.2026',
     time: '19:00 Uhr',
-    location: 'Werkhalle Bad Toelz',
+    location: 'Werkhalle, Muenchen Ost',
     distanceKm: 4.2,
     ticketPriceEur: 10,
     description:
       'Networking fuer Gruender und Developer mit kurzen Talks, offenen Q and A Sessions und Taco-Bar. Ideal, um neue Leute aus Tech und Product kennenzulernen.',
     imageColor: '#ede9fe',
     coordinates: {
-      latitude: 47.7602,
-      longitude: 11.5588,
+      latitude: 48.12,
+      longitude: 11.64,
     },
     attendingFriends: ['EB', 'CN', 'VH', 'FK'],
     attendingSummary: 'Emilia und 3 weitere Freunde sind dabei',
