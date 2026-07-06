@@ -85,14 +85,14 @@ function RootLayoutContent() {
   }
 
   return (
-    <EventProvider>
-      <LocationProvider>
+    <LocationProvider>
+      <EventProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <RootNavigator />
           <StatusBar style="auto" />
         </ThemeProvider>
-      </LocationProvider>
-    </EventProvider>
+      </EventProvider>
+    </LocationProvider>
   );
 }
 

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import { useEvents } from '@/context/event-context';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { events, bookTicket } = useEvents();
+  const { events, bookTicket, error, clearError } = useEvents();
   const insets = useSafeAreaInsets();
   const event = events.find((item) => item.id === id);
 
@@ -35,7 +35,7 @@ export default function EventDetailScreen() {
     }
   };
 
-  const handleBook = () => {
+  const handleBook = async () => {
     Alert.alert(
       'Apple Pay',
       `Ticket fuer "${event.title}" kaufen?`,
@@ -44,12 +44,17 @@ export default function EventDetailScreen() {
         {
           text: 'Kaufen',
           style: 'default',
-          onPress: () => {
-            if (id) {
-              bookTicket(String(id));
+          onPress: async () => {
+            try {
+              clearError();
+              if (id) {
+                await bookTicket(String(id));
+              }
+              Alert.alert('Erfolg', 'Dein Ticket wurde gebucht.');
+              router.replace('/(tabs)');
+            } catch {
+              Alert.alert('Buchung fehlgeschlagen', error ?? 'Bitte versuche es erneut.');
             }
-            Alert.alert('Erfolg', 'Dein Ticket wurde gebucht.');
-            router.replace('/(tabs)');
           },
         },
       ],
@@ -87,6 +92,13 @@ export default function EventDetailScreen() {
           </View>
           <Text style={styles.socialText}>{event.attendingSummary}</Text>
         </View>
+
+        {error ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hinweis</Text>
+            <Text style={styles.description}>{error}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Beschreibung</Text>

@@ -1,8 +1,8 @@
-import { router } from 'expo-router';
-import { Image } from 'expo-image';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/context/auth-context';
@@ -19,11 +19,11 @@ const friends = [
 const settingsItems = ['Datenschutz', 'Benachrichtigungen', 'Hilfe'];
 
 export default function ProfileScreen() {
-  const { role, login, upgradeToOrganizer, logout } = useAuth();
-  const { events, bookedEvents, savedEvents } = useEvents();
+  const { role, user, login, upgradeToOrganizer, logout } = useAuth();
+  const { events, bookedEvents, savedEvents, isLoading } = useEvents();
 
   const myTickets = events.filter((event) => bookedEvents.includes(event.id));
-  const myCreatedEvents = events.filter((event) => Number.parseInt(event.id, 10) > 4);
+  const myCreatedEvents = events.filter((event) => event.category === 'Kultur' || event.category === 'Party');
   const mySavedEvents = events.filter((event) => savedEvents.includes(event.id));
 
   return (
@@ -34,8 +34,8 @@ export default function ProfileScreen() {
             <Text style={styles.profileAvatarText}>JS</Text>
           </View>
           <View>
-            <Text style={styles.profileName}>Jakob Stahuber</Text>
-            <Text style={styles.profileSubline}>@venty.jakob</Text>
+            <Text style={styles.profileName}>{user?.displayName ?? 'Venty Nutzer'}</Text>
+            <Text style={styles.profileSubline}>{user?.email ?? '@venty'}</Text>
           </View>
         </View>
 
@@ -177,6 +177,12 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
         </View>
+
+        {isLoading ? (
+          <View style={styles.card}>
+            <ActivityIndicator size="small" color="#7c3aed" />
+          </View>
+        ) : null}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Einstellungen</Text>

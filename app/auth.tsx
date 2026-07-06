@@ -6,9 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/auth-context';
 
 export default function AuthScreen() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, error, clearError } = useAuth();
+  const [email, setEmail] = useState('anna@example.com');
+  const [password, setPassword] = useState('venty1234');
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -26,7 +26,10 @@ export default function AuthScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              if (error) clearError();
+            }}
           />
           <TextInput
             style={styles.input}
@@ -34,16 +37,24 @@ export default function AuthScreen() {
             placeholderTextColor="#9ca3af"
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(value) => {
+              setPassword(value);
+              if (error) clearError();
+            }}
           />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>
 
         <View style={styles.actions}>
           <Pressable
             style={styles.primaryButton}
             onPress={async () => {
-              await login('private');
-              router.replace('/(tabs)');
+              try {
+                await login(email, password);
+                router.replace('/(tabs)');
+              } catch {
+                // Fehler wird im Kontext angezeigt.
+              }
             }}>
             <Text style={styles.primaryButtonText}>Einloggen</Text>
           </Pressable>
@@ -97,6 +108,11 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 10,
+  },
+  errorText: {
+    color: '#b91c1c',
+    fontSize: 13,
+    fontWeight: '600',
   },
   primaryButton: {
     backgroundColor: '#7c3aed',

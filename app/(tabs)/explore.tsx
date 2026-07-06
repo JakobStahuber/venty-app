@@ -2,13 +2,14 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCallback } from 'react';
 import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
+    FlatList,
+    Image,
+    Pressable,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View
 } from 'react-native';
 
 import { useEvents } from '@/context/event-context';
@@ -27,7 +28,7 @@ function hasEventCoordinates(event: VentyEvent): boolean {
 }
 
 export default function ExploreScreen() {
-  const { events, savedEvents, toggleSaveEvent } = useEvents();
+  const { events, savedEvents, toggleSaveEvent, isLoading, error, refreshEvents, clearError } = useEvents();
   const { calculateDistance } = useLocation();
   const { height, width } = useWindowDimensions();
 
@@ -58,8 +59,16 @@ export default function ExploreScreen() {
     [height]
   );
 
-  if (events.length === 0) {
-    return <View style={[styles.empty, { width, height }]} />;
+  if (events.length === 0 && !isLoading) {
+    return (
+      <View style={[styles.empty, { width, height }]}>
+        {error ? (
+          <Pressable onPress={clearError} style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{error}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    );
   }
 
   return (
@@ -69,6 +78,7 @@ export default function ExploreScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         pagingEnabled
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => void refreshEvents()} />}
         snapToAlignment="start"
         decelerationRate="fast"
         showsVerticalScrollIndicator={false}
@@ -155,6 +165,18 @@ const styles = StyleSheet.create({
   },
   empty: {
     backgroundColor: '#000000',
+  },
+  errorBanner: {
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    margin: 16,
+  },
+  errorBannerText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   heartWrap: {
     position: 'absolute',

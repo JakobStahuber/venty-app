@@ -1,19 +1,20 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
-import { router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useEvents } from '@/context/event-context';
@@ -47,7 +48,7 @@ function formatTimeGerman(d: Date): string {
 }
 
 export default function PlusScreen() {
-  const { addEvent } = useEvents();
+  const { addEvent, error, clearError } = useEvents();
   const insets = useSafeAreaInsets();
 
   const [title, setTitle] = useState('');
@@ -134,7 +135,7 @@ export default function PlusScreen() {
     }
   };
 
-  const validateAndSubmit = () => {
+  const validateAndSubmit = async () => {
     const next: typeof fieldErrors = {};
     if (!title.trim()) next.title = 'Bitte einen Titel eingeben.';
     if (!eventDate) next.date = 'Bitte ein Datum wählen.';
@@ -147,32 +148,39 @@ export default function PlusScreen() {
       return;
     }
 
-    const dateStr = formatDateGerman(eventDate!);
-    const timeStr = formatTimeGerman(eventTime!);
     const parsedPrice = Number.parseFloat(ticketPrice.replace(',', '.')) || 0;
+    const start = new Date(eventDate!);
+    const end = new Date(eventDate!);
+    start.setHours(eventTime!.getHours(), eventTime!.getMinutes(), 0, 0);
+    end.setHours(eventTime!.getHours() + 2, eventTime!.getMinutes(), 0, 0);
 
-    addEvent({
-      title: title.trim(),
-      date: dateStr,
-      time: timeStr,
-      location: `${location.trim() || 'Ort folgt'} • ${selectedCategory!}`,
-      ticketPriceEur: parsedPrice,
-      description: description.trim() || 'Weitere Details folgen in Kürze.',
-      imageUri: imageUri ?? undefined,
-    });
+    try {
+      clearError();
+      await addEvent({
+        title: title.trim(),
+        startAtIso: start.toISOString(),
+        endAtIso: end.toISOString(),
+        location: `${location.trim() || 'Ort folgt'} • ${selectedCategory!}`,
+        ticketPriceEur: parsedPrice,
+        description: description.trim() || 'Weitere Details folgen in Kürze.',
+        imageUri: imageUri ?? undefined,
+      });
 
-    setTitle('');
-    setEventDate(null);
-    setEventTime(null);
-    setLocation('');
-    setTicketPrice('');
-    setDescription('');
-    setImageUri(null);
-    setSelectedCategory(null);
-    setSelectedBundleId(null);
-    setFieldErrors({});
+      setTitle('');
+      setEventDate(null);
+      setEventTime(null);
+      setLocation('');
+      setTicketPrice('');
+      setDescription('');
+      setImageUri(null);
+      setSelectedCategory(null);
+      setSelectedBundleId(null);
+      setFieldErrors({});
 
-    router.replace('/(tabs)');
+      router.replace('/(tabs)');
+    } catch {
+      Alert.alert('Event konnte nicht erstellt werden', error ?? 'Bitte versuche es erneut.');
+    }
   };
 
   return (

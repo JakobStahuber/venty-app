@@ -1,8 +1,8 @@
-import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useEvents } from '@/context/event-context';
@@ -11,7 +11,7 @@ const FILTERS = ['Alle', 'Party', 'Kultur', 'Sport', 'Food'] as const;
 const EVENT_CATEGORY_ROTATION = ['Party', 'Kultur', 'Sport', 'Food'] as const;
 
 export default function HomeScreen() {
-  const { events } = useEvents();
+  const { events, isLoading, error, refreshEvents, clearError } = useEvents();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<(typeof FILTERS)[number]>('Alle');
 
@@ -64,7 +64,23 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.feedContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.feedContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={() => void refreshEvents()} />
+        }>
+        {error ? (
+          <Pressable onPress={clearError} style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{error}</Text>
+          </Pressable>
+        ) : null}
+        {isLoading && filteredEvents.length === 0 ? (
+          <View style={styles.loadingState}>
+            <ActivityIndicator size="small" color="#7c3aed" />
+            <Text style={styles.loadingText}>Lade Events…</Text>
+          </View>
+        ) : null}
         {filteredEvents.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>Keine passenden Events gefunden.</Text>
@@ -236,6 +252,31 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: '#6b7280',
+    fontWeight: '600',
+  },
+  errorBanner: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  errorBannerText: {
+    color: '#b91c1c',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  loadingState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+  },
+  loadingText: {
+    color: '#6b7280',
+    fontSize: 13,
     fontWeight: '600',
   },
 });
